@@ -13,7 +13,7 @@ FB_SEARCH_INDEX = "intprof"
 FB_SEARCH_TYPE = "profile"
 MAX_RETRIES = 3
 TIMEOUT_CUTOFF = 1
-ES_LOG_PATH = "tmp/es_trace.log"
+ES_LOG_PATH = "es_trace.log"
 CHUNK_SIZE = 1000
 
 SOC_DEMO_PARAMS = [u"gender", u"city", u"country"]
@@ -21,9 +21,9 @@ SOC_DEMO_PARAMS = [u"gender", u"city", u"country"]
 
 def init_loggers():
     # soc-dem client logger
-    logging.basicConfig(filename="fb_stats.log", format='%(asctime)s %(message)s', level=logging.INFO)
+    logging.basicConfig(filename="fb_stats.log", format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
     last_slash_pos = ES_LOG_PATH.rfind("/")
-    if not os.path.exists(ES_LOG_PATH):
+    if (last_slash_pos > -1) and (not os.path.exists(ES_LOG_PATH)):
         os.makedirs(ES_LOG_PATH[:last_slash_pos])
     # es logger
     tracer = logging.getLogger('elasticsearch.trace')
@@ -62,7 +62,7 @@ class FBSocDemoStatClient():
                 try:
                     ids_list.append(int(id_str))
                 except ValueError:
-                    logging.info("Invalid id detected in input file: %s" % id_str)
+                    logging.warning("Invalid id detected in input file: %s" % id_str)
         return ids_list
 
     def __yield_ids(self):
@@ -124,7 +124,7 @@ init_loggers()
 try:
     client = FBSocDemoStatClient(options)
     if client.id_list_empty():
-        logging.info("The input id list is empty")
+        logging.warning("The input id list is empty")
         print "The input id list is empty"
     else:
         logging.info("Starting search...")
